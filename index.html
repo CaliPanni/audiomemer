@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link id="favicon" rel="icon" href="favicon-light.ico" type="image/x-icon">
+  <title>Audio Memer v1.0</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    #audioPlayer {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    input[type="file"],
+    input[type="range"],
+    label {
+      margin: 10px 0;
+      display: block;
+      width: 100%;
+    }
+    .footer {
+  margin-top: 20px;
+  border-top: 1px solid white;
+  padding-top: 10px;
+  text-align: center;
+}
+
+    .warning {
+      color: red;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <script> 
+    // Funzione per controllare se il tema del browser è chiaro o scuro
+    function isDarkMode() {
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    // Funzione per impostare la favicon in base al tema
+    function setFavicon() {
+      const favicon = document.getElementById('favicon');
+      const faviconPath = isDarkMode() ? 'favicon-light.ico' : 'favicon-dark.ico';
+      favicon.href = faviconPath;
+    }
+
+    // Chiamata alla funzione all'avvio della pagina
+    setFavicon();
+    </script>
+  <center>
+
+  <h1>Audio Memer v1.0</h1>
+  <p>Satura tutti i file audio che vuoi gratis!</p>
+  <input type="file" id="audioFileInput" accept="audio/mp3" />
+  
+  <div>
+    <label for="saturateRange">Saturate Level <span id="saturatePercentage">0%</span></label>
+    <input type="range" id="saturateRange" min="0" max="1000" value="0" />
+    <div id="saturateWarning" class="warning"></div>
+  </div>
+
+  <div>
+    <label for="volumeRange">Volume <span id="volumePercentage">100%</span></label>
+    <input type="range" id="volumeRange" min="1" max="1000" value="100" />
+    <div id="volumeWarning" class="warning"></div>
+  </div>
+
+  <audio id="audioPlayer" controls></audio>
+
+  <script>
+    
+    document.getElementById('audioFileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      const audioPlayer = document.getElementById('audioPlayer');
+      audioPlayer.src = URL.createObjectURL(file);
+
+      audioPlayer.addEventListener('loadedmetadata', function() {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaElementSource(audioPlayer);
+        const gainNode = audioContext.createGain();
+        const saturateNode = audioContext.createWaveShaper();
+        
+        source.connect(saturateNode);
+        saturateNode.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        document.getElementById('saturateRange').addEventListener('input', function() {
+          const saturateLevel = this.value;
+          saturateNode.curve = makeSaturatorCurve(saturateLevel);
+          updatePercentage('saturate', saturateLevel);
+          checkWarning('saturate', saturateLevel);
+        });
+
+        document.getElementById('volumeRange').addEventListener('input', function() {
+          const volumeLevel = this.value;
+          gainNode.gain.value = volumeLevel / 100; // Normalizing the volume to a range between 0 and 1
+          updatePercentage('volume', volumeLevel);
+          checkWarning('volume', volumeLevel);
+        });
+      });
+    });
+
+    function updatePercentage(type, value) {
+      const percentageElement = document.getElementById(type + 'Percentage');
+      percentageElement.textContent = value + '%';
+    }
+
+    function checkWarning(type, value) {
+      const warningElement = document.getElementById(type + 'Warning');
+      const icon = '⚠️';
+
+      if (value > 500) {
+        warningElement.innerHTML = icon + ' ' + getWarningMessage(type);
+      } else {
+        warningElement.innerHTML = '';
+      }
+    }
+
+    function getWarningMessage(type) {
+      switch (type) {
+        case 'saturate':
+          return 'SATURAZIONE TROPPO ALTA! E\' CONSIGLIATO ABBASSARLO!';
+        case 'volume':
+          return 'VOLUME TROPPO ALTO! E\' CONSIGLIATO ABBASSARLO!';
+        default:
+          return '';
+      }
+    }
+
+    function makeSaturatorCurve(amount) {
+      const k = typeof amount === 'number' ? amount : 50;
+      const numSamples = 44100;
+      const curve = new Float32Array(numSamples);
+      const deg = Math.PI / 180;
+
+      for (let i = 0; i < numSamples; ++i) {
+        const x = (i * 2) / numSamples - 1;
+        curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+      }
+
+      return curve;
+    }
+    
+  </script>
+  <hr>
+  <h3>Come scaricare l'audio?</h3>
+  <img src="download01.png" width="100" height="50">
+  <br>
+  <p>Clicca sui tre puntini (⋮)</p>
+  <br>
+  <img src="download02.png" width="100" height="50">
+  <br>
+  <p>Clicca "Scarica"</p>
+  <div class="footer">Made in Irpinia, Build 1.0 23/12/2023 21:55</div>
+</center>
+</body>
+</html>
