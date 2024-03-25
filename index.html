@@ -39,6 +39,7 @@
   </style>
 </head>
 <body>
+  <h1>Versione Alphatest 1.1</h1>
   <script> 
     alert("Per ora non siamo riusciti a risolvere il bug che non fa scaricare l'audio prodotto. Registra lo schermo per ottenerlo.")
     // Funzione per controllare se il tema del browser è chiaro o scuro
@@ -75,6 +76,9 @@
   </div>
 
   <audio id="audioPlayer" controls></audio>
+  
+  <!-- Aggiunta del pulsante di download -->
+  <button id="downloadButton" onclick="downloadAudio()">Download Audio</button>
 
   <script>
     
@@ -149,6 +153,17 @@
 
       return curve;
     }
+
+    // Funzione per il download dell'audio
+    function downloadAudio() {
+      const audioPlayer = document.getElementById('audioPlayer');
+      const audioSrc = audioPlayer.src;
+      const fileName = 'audio_memer.mp3'; // Nome del file di download
+      const link = document.createElement('a');
+      link.href = audioSrc;
+      link.download = fileName;
+      link.click();
+    }
     
   </script>
   <hr>
@@ -160,7 +175,5 @@
   <img src="download02.png" width="100" height="50">
   <br>
   <p>Clicca "Scarica"</p>
-  <div class="footer">Made in Irpinia, Build 1.0b 24/12/2023 15:55</div>
+  <div class="footer">Made in Irpinia, Build 1.1 Alphatest 25/3/2024 20:50</div>
 </center>
-</body>
-</html>
